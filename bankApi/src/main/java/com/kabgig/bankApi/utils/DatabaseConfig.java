@@ -1,9 +1,19 @@
 package com.kabgig.bankApi.utils;
 
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@Data
 public class DatabaseConfig {
-    public static final String DATABASE_URL = "jdbc:postgresql://localhost:5432/bankApi";
-    public static final String DATABASE_USER = "root";
-    public static final String DATABASE_PASSWORD = "1234";
-    public static final String DATABASE_DRIVER = "org.postgresql.Driver";
-    public static final String HIBERNATE_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl;
+
+    @Value("${spring.datasource.username}")
+    private String datasourceUsername;
+
+    @Value("${spring.datasource.password}")
+    private String datasourcePassword;
 }
