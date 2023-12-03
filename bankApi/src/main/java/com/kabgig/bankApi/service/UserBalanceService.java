@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UserBalanceService {
@@ -20,7 +21,6 @@ public class UserBalanceService {
     public double getBalance(long userId){
         return userBalanceRepository.findById(userId).get().getBalance();
     }
-
     public UserBalance putMoneу(long userId, double amount){
         UserBalance userBalanceEntity = userBalanceRepository.findById(userId).get();
         userBalanceEntity.setBalance(userBalanceEntity.getBalance() + amount);
@@ -47,7 +47,31 @@ public class UserBalanceService {
         transactionService.addTransaction(putTransaction);
         return userBalanceRepository.save(userBalanceEntity);
     }
-    public void deleteUserById(long userId){
-        userBalanceRepository.deleteById(userId);
+    public List<Transaction> transferAmount(double amount, long senderId, long receiverId){
+        UserBalance sender = userBalanceRepository.findById(senderId).get();
+        UserBalance receiver = userBalanceRepository.findById(receiverId).get();
+        sender.setBalance(sender.getBalance() - amount);
+        receiver.setBalance(receiver.getBalance() + amount);
+        userBalanceRepository.saveAll(List.of(sender, receiver));
+
+        Transaction senderTransfer = Transaction.builder()
+                .balance(sender.getBalance())
+                .userId(senderId)
+                .date(LocalDateTime.now())
+                .operation("TRANSFER_OUT")
+                .amount(amount)
+                .build();
+
+        transactionService.addTransaction(senderTransfer);
+        Transaction receiverTransfer = Transaction.builder()
+                .balance(receiver.getBalance())
+                .userId(receiverId)
+                .date(LocalDateTime.now())
+                .operation("TRANSFER_IN")
+                .amount(amount)
+                .build();
+
+        transactionService.addTransaction(receiverTransfer);
+        return List.of(senderTransfer,receiverTransfer);
     }
 }
