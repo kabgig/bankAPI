@@ -1,0 +1,15 @@
+image: maven:3.9.2-jdk-17
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+  - mvn compile
+
+test:
+  stage: test
+  script:
+  - mvn clean test
