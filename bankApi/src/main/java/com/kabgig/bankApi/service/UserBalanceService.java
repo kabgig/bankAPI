@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserBalanceService {
@@ -18,60 +19,88 @@ public class UserBalanceService {
     @Autowired
     private TransactionService transactionService;
 
-    public double getBalance(long userId){
-        return userBalanceRepository.findById(userId).get().getBalance();
+    public double getBalance(long userId) {
+        try {
+            Optional<UserBalance> userBalance = userBalanceRepository.findById(userId);
+            if (userBalance.isEmpty()) return -1;
+            return userBalance.get().getBalance();
+        } catch (Exception e) {
+            System.out.println(e);
+            return -1;
+        }
     }
-    public UserBalance putMoneу(long userId, double amount){
-        UserBalance userBalanceEntity = userBalanceRepository.findById(userId).get();
-        userBalanceEntity.setBalance(userBalanceEntity.getBalance() + amount);
-        Transaction putTransaction = Transaction.builder()
-                .userId(userBalanceEntity.getId())
-                .amount(amount)
-                .date(LocalDateTime.now())
-                .operation("PUT")
-                .balance(userBalanceEntity.getBalance())
-                .build();
-        transactionService.addTransaction(putTransaction);
-        return userBalanceRepository.save(userBalanceEntity);
+
+    public int putMoneу(long userId, double amount) {
+        try {
+            UserBalance userBalanceEntity = userBalanceRepository.findById(userId).get();
+            userBalanceEntity.setBalance(userBalanceEntity.getBalance() + amount);
+            Transaction putTransaction = Transaction.builder()
+                    .userId(userBalanceEntity.getId())
+                    .amount(amount)
+                    .date(LocalDateTime.now())
+                    .operation("PUT")
+                    .balance(userBalanceEntity.getBalance())
+                    .build();
+            transactionService.addTransaction(putTransaction);
+            UserBalance userBalance = userBalanceRepository.save(userBalanceEntity);
+            return 1;
+        } catch (Exception e) {
+            System.out.println(e);
+            return 0;
+        }
     }
-    public UserBalance takeMoney(long userId, double amount){
-        UserBalance userBalanceEntity = userBalanceRepository.findById(userId).get();
-        userBalanceEntity.setBalance(userBalanceEntity.getBalance() - amount);
-        Transaction putTransaction = Transaction.builder()
-                .userId(userBalanceEntity.getId())
-                .amount(amount)
-                .date(LocalDateTime.now())
-                .operation("TAKE")
-                .balance(userBalanceEntity.getBalance())
-                .build();
-        transactionService.addTransaction(putTransaction);
-        return userBalanceRepository.save(userBalanceEntity);
+
+    public int takeMoney(long userId, double amount) {
+        try {
+            UserBalance userBalanceEntity = userBalanceRepository.findById(userId).get();
+            if (userBalanceEntity.getBalance() < amount) return 0;
+            userBalanceEntity.setBalance(userBalanceEntity.getBalance() - amount);
+            Transaction putTransaction = Transaction.builder()
+                    .userId(userBalanceEntity.getId())
+                    .amount(amount)
+                    .date(LocalDateTime.now())
+                    .operation("TAKE")
+                    .balance(userBalanceEntity.getBalance())
+                    .build();
+            transactionService.addTransaction(putTransaction);
+            userBalanceRepository.save(userBalanceEntity);
+            return 1;
+        } catch (Exception e) {
+            System.out.println(e);
+            return 0;
+        }
     }
-    public List<Transaction> transferAmount(double amount, long senderId, long receiverId){
-        UserBalance sender = userBalanceRepository.findById(senderId).get();
-        UserBalance receiver = userBalanceRepository.findById(receiverId).get();
-        sender.setBalance(sender.getBalance() - amount);
-        receiver.setBalance(receiver.getBalance() + amount);
-        userBalanceRepository.saveAll(List.of(sender, receiver));
 
-        Transaction senderTransfer = Transaction.builder()
-                .balance(sender.getBalance())
-                .userId(senderId)
-                .date(LocalDateTime.now())
-                .operation("TRANSFER_OUT")
-                .amount(amount)
-                .build();
+    public int transferAmount(double amount, long senderId, long receiverId) {
+        try {
+            UserBalance sender = userBalanceRepository.findById(senderId).get();
+            UserBalance receiver = userBalanceRepository.findById(receiverId).get();
+            sender.setBalance(sender.getBalance() - amount);
+            receiver.setBalance(receiver.getBalance() + amount);
+            userBalanceRepository.saveAll(List.of(sender, receiver));
 
-        transactionService.addTransaction(senderTransfer);
-        Transaction receiverTransfer = Transaction.builder()
-                .balance(receiver.getBalance())
-                .userId(receiverId)
-                .date(LocalDateTime.now())
-                .operation("TRANSFER_IN")
-                .amount(amount)
-                .build();
+            Transaction senderTransfer = Transaction.builder()
+                    .balance(sender.getBalance())
+                    .userId(senderId)
+                    .date(LocalDateTime.now())
+                    .operation("TRANSFER_OUT")
+                    .amount(amount)
+                    .build();
 
-        transactionService.addTransaction(receiverTransfer);
-        return List.of(senderTransfer,receiverTransfer);
+            transactionService.addTransaction(senderTransfer);
+            Transaction receiverTransfer = Transaction.builder()
+                    .balance(receiver.getBalance())
+                    .userId(receiverId)
+                    .date(LocalDateTime.now())
+                    .operation("TRANSFER_IN")
+                    .amount(amount)
+                    .build();
+
+            transactionService.addTransaction(receiverTransfer);
+            return 1;
+        } catch (Exception e) {
+            System.out.println(e);
+            return 0;
+        }
     }
 }

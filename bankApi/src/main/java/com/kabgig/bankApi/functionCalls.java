@@ -19,7 +19,6 @@ public class functionCalls {
 
     @Bean
     public void callingFunctions() {
-        System.out.println(LocalDateTime.now());
 //        long id = 103;
 //        System.out.println("Start----------");
 //        double balance = userBalanceService.getBalance(id);
@@ -47,8 +46,8 @@ public class functionCalls {
     }
     //@Bean
     public void callingFunctions2(){
-        List<Transaction> transactions = userBalanceService
+        int i = userBalanceService
                 .transferAmount(45.5, 101L, 102L);
-        System.out.println(transactions);
+        System.out.println(i);
     }
 }

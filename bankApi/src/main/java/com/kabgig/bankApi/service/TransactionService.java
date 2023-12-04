@@ -13,11 +13,18 @@ public class TransactionService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    public void addTransaction(Transaction transaction){
-        transactionRepository.save(transaction);
+    public int addTransaction(Transaction transaction) {
+        try {
+            transactionRepository.save(transaction);
+            return 1;
+        } catch (Exception e) {
+            System.out.println(e);
+            return 0;
+        }
+
     }
 
-    public List<Transaction> getTransactionsByDateRangeAndUseId(Long userId, LocalDateTime startDate, LocalDateTime endDate){
+    public List<Transaction> getTransactionsByDateRangeAndUseId(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate == null && endDate == null) {
             // If both startDate and endDate are null, return all transactions for the given userId
             return transactionRepository.findByUserId(userId);
