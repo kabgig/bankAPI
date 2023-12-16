@@ -5,6 +5,7 @@ import com.kabgig.bankApi.entity.UserBalance;
 import com.kabgig.bankApi.repository.UserBalanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +31,7 @@ public class UserBalanceService {
         }
     }
 
+    @Transactional
     public int putMoneу(long userId, double amount) {
         try {
             UserBalance userBalanceEntity = userBalanceRepository.findById(userId).get();
@@ -50,6 +52,7 @@ public class UserBalanceService {
         }
     }
 
+    @Transactional
     public int takeMoney(long userId, double amount) {
         try {
             UserBalance userBalanceEntity = userBalanceRepository.findById(userId).get();
@@ -71,6 +74,7 @@ public class UserBalanceService {
         }
     }
 
+    @Transactional
     public int transferAmount(double amount, long senderId, long receiverId) {
         try {
             UserBalance sender = userBalanceRepository.findById(senderId).get();
