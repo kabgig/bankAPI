@@ -79,6 +79,10 @@ public class UserBalanceService {
         try {
             UserBalance sender = userBalanceRepository.findById(senderId).get();
             UserBalance receiver = userBalanceRepository.findById(receiverId).get();
+            if(!isBalanceSufficient(sender,amount)){
+                System.out.println("Sender has insufficient balance!");
+                return 0;
+            }
             sender.setBalance(sender.getBalance() - amount);
             receiver.setBalance(receiver.getBalance() + amount);
             userBalanceRepository.saveAll(List.of(sender, receiver));
@@ -106,5 +110,10 @@ public class UserBalanceService {
             System.out.println(e);
             return 0;
         }
+    }
+
+    private boolean isBalanceSufficient(UserBalance sender, double amount) {
+        if(sender.getBalance() < amount) return false;
+        else return true;
     }
 }
